@@ -1,34 +1,41 @@
+import https from 'https';
+import fs from 'fs';
+import express from 'express';
+import dotenv from 'dotenv';
+import cors from 'cors';
+import taskRoutes from './src/routes/tasks.routes.js';
 
-// importar dotenv para usar la configuracion de .env
-import dotenv from 'dotenv'
-dotenv.config()
+dotenv.config();
 
-// importar cors
-import cors from 'cors'
+const app = express();
+const PORT = process.env.PORT || 8080;
 
-// rutas
+// Configuración de HTTPS
+const options = {
+  key: fs.readFileSync('C:/Windows/System32/cert.key'),
+  cert: fs.readFileSync('C:/Windows/System32/cert.crt')
+};
 
+// Middleware
+app.use(express.json());
 
-// importar express e inicializarlo con app
-import express from 'express'
-const app = express()
-
-app.use(express.json())
-
+// Middleware para manejar errores
 app.use((err, req, res, next) => {
-	console.error(err.stack)
-	res.status(500).send('Algo se rompió!')
-})
+  console.error(err.stack);
+  res.status(500).send('¡Algo salió mal!');
+});
 
-// permitir la comunicación del frontend(en el port 3000) con el backend
+// Middleware CORS
 app.use(cors({
-	origin: 'http://localhost:3000',
-	methods: 'GET, POST, PUT, DELETE, PATCH',
-	allowedHeaders: 'Content-Type'
-}))
+  origin: 'http://localhost:3000',
+  methods: 'GET, POST, PUT, DELETE, PATCH',
+  allowedHeaders: 'Content-Type'
+}));
 
-const PORT = process.env.PORT // crear el env con PORT = 8080
+// Rutas
+app.use('/api', taskRoutes);
 
-app.listen(PORT, () => {
-	console.log(`Servidor corriendo exitosamente en el puerto ${PORT} :)`)
-})
+// Inicializar servidor HTTPS
+https.createServer(options, app).listen(PORT, () => {
+  console.log(`Servidor corriendo exitosamente en el puerto ${PORT} con HTTPS :)`);
+});
