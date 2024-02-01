@@ -96,3 +96,10 @@ CREATE TABLE solicitud_recurso (
 // 
 ALTER TABLE solicitud_recurso
 MODIFY fecha_de_inicio TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+// 
+ALTER TABLE recurso
+ADD COLUMN id_proyecto_id INT
+
+ALTER TABLE recurso
+ADD CONSTRAINT fk_proyecto_recurso
+FOREIGN KEY (id_proyecto_id) REFERENCES proyecto(id_proyecto) ON DELETE CASCADE;

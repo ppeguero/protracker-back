@@ -27,14 +27,14 @@ export const getResource = (req, res) => {
 }
 
 export const createResource = (req, res) => {
-    const {nombre, descripcion, tipo, cantidad} = req.body;
+    const {nombre, descripcion, tipo, cantidad, id_proyecto_id} = req.body;
 
-    if (!nombre || !descripcion || !tipo || !cantidad){
+    if (!nombre || !descripcion || !tipo || !cantidad || !id_proyecto_id){
         return res.status(400).json({message: "¡Se requieren todos los valores!"})
     }
 
-    connection.query("INSERT INTO recurso (nombre, descripcion, tipo, cantidad) VALUES (?,?,?,?)", 
-    [nombre, descripcion, tipo, cantidad],
+    connection.query("INSERT INTO recurso (nombre, descripcion, tipo, cantidad, id_proyecto_id) VALUES (?,?,?,?,?)", 
+    [nombre, descripcion, tipo, cantidad, id_proyecto_id],
     (err, results) => {
         if (err){
             console.error(err)
