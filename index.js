@@ -7,13 +7,17 @@ dotenv.config()
 import cors from 'cors'
 
 // rutas
-
+import resourceRoutes from './src/routes/resourceRoutes.js'
 
 // importar express e inicializarlo con app
 import express from 'express'
 const app = express()
 
+// usar rutas
+
 app.use(express.json())
+app.use('/protracker', resourceRoutes)
+
 
 app.use((err, req, res, next) => {
 	console.error(err.stack)
@@ -22,7 +26,7 @@ app.use((err, req, res, next) => {
 
 // permitir la comunicación del frontend(en el port 3000) con el backend
 app.use(cors({
-	origin: 'http://localhost:3000',
+	origin: 'http://localhost:5173',
 	methods: 'GET, POST, PUT, DELETE, PATCH',
 	allowedHeaders: 'Content-Type'
 }))
