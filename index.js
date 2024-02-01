@@ -8,6 +8,7 @@ import userRoutes from './src/routes/userRoutes.js';
 import teamRoutes from './src/routes/teams.routes.js';
 import projectRoutes from './src/routes/projects.routes.js';
 import memberRoutes from './src/routes/members.routes.js';
+import statisticsRoutes from './src/routes/statistics.routes.js';
 
 dotenv.config();
 
@@ -42,6 +43,8 @@ app.use(cors({
 // Rutas
 app.use('/api', taskRoutes);
 app.use('/api', userRoutes);
+app.use('/api', statisticsRoutes)
+
 
 // Inicializar servidor HTTPS
 https.createServer(options, app).listen(PORT, () => {
