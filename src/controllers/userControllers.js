@@ -1,6 +1,8 @@
 import connection from "../routes/db.js";
 import bcrypt from "bcrypt";
 import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+
 
 // obtener todos los usuarios
 export const getUsers = (req, res) => {
@@ -264,7 +266,6 @@ export const updateUser = (req, res) => {
 };
 
 
-
 // Contador de usuarios
 export const contadorUsuario = async (req, res) => {
   try {
@@ -306,7 +307,9 @@ function generateAuthToken(user) {
 
 
 export const loginUser = (req, res) => {
-  const { correo, contraseña } = req.body;
+  const correo = req.body.email;
+  const contraseña = req.body.password;
+
   connection.query(
     'SELECT * FROM usuario WHERE correo = ?',
     [correo],
@@ -335,6 +338,7 @@ export const loginUser = (req, res) => {
         // Generar un token de autenticación
         const token = generateAuthToken(usuario);
 
+        // res.status(200).json({ token, usuario });
         res.status(200).json({ token, usuario });
       });
     }
