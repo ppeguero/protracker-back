@@ -4,7 +4,9 @@ import jwt from 'jsonwebtoken';
 
 // obtener todos los usuarios
 export const getUsers = (req, res) => {
-  connection.query("SELECT * FROM usuario", (err, results) => {
+  connection.query(`SELECT usuario.*, rol.nombre AS nombre_rol
+  FROM usuario
+  INNER JOIN rol ON usuario.id_rol_id = rol.id_rol`, (err, results) => {
     if (err) {
       console.error(err);
       return res.status(500).json({ message: "Error interno del servidor" });
@@ -18,7 +20,10 @@ export const getUser = (req, res) => {
   const idUser = req.params.id;
 
   connection.query(
-    "SELECT * FROM usuario WHERE id_usuario = ?",
+    `SELECT usuario.*, rol.nombre AS nombre_rol
+    FROM usuario
+    INNER JOIN rol ON usuario.id_rol_id = rol.id_rol
+    WHERE usuario.id_usuario = ?`,
     [idUser],
     (err, results) => {
       if (err) {
@@ -136,8 +141,8 @@ export const resetPassword = (req, res) => {
 }
 
 // crear un usuario
-export const createUser = (req, res) => {
-  const { nombre, correo, contraseña } = req.body;
+export const createUser = (req, res) => { 
+  const { nombre, correo, contraseña , id_rol_id} = req.body;
 
   // Validar el nombre de usuario
   if (
@@ -156,8 +161,8 @@ export const createUser = (req, res) => {
       return res.status(500).json({ message: "Error Interno" });
     }
     connection.query(
-      "INSERT INTO usuario (nombre, correo, contraseña) VALUES (?, ?, ?)",
-      [nombre, correo, hash],
+      "INSERT INTO usuario (nombre, correo, contraseña, id_rol_id) VALUES (?, ?, ?, ?)",
+      [nombre, correo, hash, id_rol_id],
       (err, results) => {
         if (err) {
           console.error(err);
@@ -199,46 +204,66 @@ export const deleteUser = (req, res) => {
   );
 };
 
-// actualizar un usuario
+
 export const updateUser = (req, res) => {
   const idUsuario = req.params.id;
   const { nombre, correo, contraseña, id_rol_id } = req.body;
 
-  // arreglo para guardar los campos que se van a actualizar
-  const setFields = [];
+  const updatePromises = [];
 
-  // verifica si los campos nombre, correo o contraseña existen en el request
-  // y los guardan en la constante setFields
-  if (nombre) {
-    setFields.push(`nombre = '${nombre}'`);
-  }
-  if (correo) {
-    setFields.push(`correo = '${correo}'`);
-  }
-  if (contraseña) {
-    setFields.push(`contraseña = '${contraseña}'`);
-  }
-  if (id_rol_id) {
-    setFields.push(`id_rol_id = '${id_rol_id}'`);
-  }
-
-  connection.query(
-    `UPDATE usuario SET ${setFields.join(", ")} WHERE id_usuario = ?`,
-    [idUsuario],
-    (err, results) => {
-      if (err) {
-        console.error(err);
-        res
-          .status(500)
-          .json({ message: "Error interno del servidor", error: err });
+  const updateField = (fieldName, value) => {
+    return new Promise((resolve, reject) => {
+      let updateQuery;
+      if (fieldName === 'contraseña' && value) {
+        const saltRounds = 10;
+        bcrypt.hash(value, saltRounds, (hashError, hash) => {
+          if (hashError) {
+            console.error(hashError);
+            reject("Error al cifrar la contraseña");
+          }
+          updateQuery = 'UPDATE usuario SET contraseña = ? WHERE id_usuario = ?';
+          performUpdate(updateQuery, [hash, idUsuario]);
+        });
+      } else {
+        updateQuery = `UPDATE usuario SET ${fieldName} = ? WHERE id_usuario = ?`;
+        performUpdate(updateQuery, [value, idUsuario]);
       }
 
-      return res
-        .status(200)
-        .json({ message: "Usuario actualizado correctamente" });
-    }
-  );
+      function performUpdate(query, params) {
+        connection.query(query, params, (err, results) => {
+          if (err) {
+            console.error(err);
+            reject(`Error al actualizar ${fieldName}`);
+          }
+          resolve(`Campo ${fieldName} actualizado correctamente`);
+        });
+      }
+    });
+  };
+
+  if (nombre) {
+    updatePromises.push(updateField('nombre', nombre));
+  }
+  if (correo) {
+    updatePromises.push(updateField('correo', correo));
+  }
+  if (contraseña) {
+    updatePromises.push(updateField('contraseña', contraseña));
+  }
+  if (id_rol_id) {
+    updatePromises.push(updateField('id_rol_id', id_rol_id));
+  }
+
+  Promise.all(updatePromises)
+    .then((messages) => {
+      res.status(200).json({ messages });
+    })
+    .catch((error) => {
+      res.status(500).json({ error: error.message || 'Error interno del servidor' });
+    });
 };
+
+
 
 // Contador de usuarios
 export const contadorUsuario = async (req, res) => {

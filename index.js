@@ -5,9 +5,9 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import taskRoutes from './src/routes/tasks.routes.js';
 import userRoutes from './src/routes/userRoutes.js';
-import teamRoutes from './src/routes/teams.routes.js';
-import projectRoutes from './src/routes/projects.routes.js';
-import memberRoutes from './src/routes/members.routes.js';
+// import teamRoutes from './src/routes/teams.routes.js';
+// import projectRoutes from './src/routes/projects.routes.js';
+// import memberRoutes from './src/routes/members.routes.js';
 
 dotenv.config();
 
@@ -42,9 +42,9 @@ app.use(cors({
 // Rutas
 app.use('/api', taskRoutes);
 app.use('/api', userRoutes);
-app.use('/api', teamRoutes);
-app.use('/api', projectRoutes);
-app.use('/api', memberRoutes);
+// app.use('/api', teamRoutes);
+// app.use('/api', projectRoutes);
+// app.use('/api', memberRoutes);
 
 // Inicializar servidor HTTPS
 https.createServer(options, app).listen(PORT, () => {

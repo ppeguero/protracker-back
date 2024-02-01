@@ -14,4 +14,4 @@ userRoutes.patch('/user/restablish', userController.resetPassword);
 userRoutes.get('/userCount', userController.contadorUsuario);
 userRoutes.post('/login', userController.loginUser);
 
-export default userRoutes;
+export default userRoutes; 
