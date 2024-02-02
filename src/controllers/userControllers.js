@@ -145,15 +145,18 @@ export const resetPassword = (req, res) => {
 // crear un usuario
 export const createUser = (req, res) => { 
   const { nombre, correo, contraseña, id_rol_id = 3 } = req.body;
-  
+  console.log(nombre);
+  console.log(correo);
+  console.log(contraseña);
+  console.log(id_rol_id);
   // Validar el nombre de usuario
-  if (
-    nombre.length < 6 ||
-    !/^[a-zA-Z0-9]+$/.test(nombre) ||
-    /\s/.test(nombre)
-  ) {
-    return res.status(400).json({ error: "El nombre de usuario no cumple con los requisitos." });
-  }
+  // if (
+  //   nombre.length < 6 ||
+  //   !/^[a-zA-Z0-9]+$/.test(nombre) ||
+  //   /\s/.test(nombre)
+  // ) {
+  //   return res.status(400).json({ error: "El nombre de usuario no cumple con los requisitos." });
+  // }
 
   const saltRounds = 15;
 

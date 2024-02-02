@@ -1,8 +1,8 @@
 import connection from "../routes/db.js";
 
-// Obtener todos los equipos
+// Obtener todos los equipos con el id_usuario_id mediante INNER JOIN
 export const getTeams = (req, res) => {
-  connection.query('SELECT * FROM equipo', (error, results) => {
+  connection.query('SELECT equipo.id_equipo, equipo.nombre, equipo.id_usuario_id, usuario.nombre AS nombreUsuario FROM equipo INNER JOIN usuario ON equipo.id_usuario_id = usuario.id_usuario', (error, results) => {
     if (error) {
       console.error('Error al obtener equipos:', error);
       res.status(500).json({ success: false, message: 'Error al obtener equipos' });
@@ -11,6 +11,8 @@ export const getTeams = (req, res) => {
     }
   });
 };
+
+
 
 // Obtener un equipo por ID
 export const getTeam = (req, res) => {
@@ -30,9 +32,9 @@ export const getTeam = (req, res) => {
 
 // Crear un equipo
 export const createTeam = (req, res) => {
-  const { nombre } = req.body;
+  const { nombre, id_usuario_id } = req.body;
 
-  connection.query('INSERT INTO equipo (nombre) VALUES (?)', [nombre], (error, results) => {
+  connection.query('INSERT INTO equipo (nombre, id_usuario_id) VALUES (?, ?)', [nombre, id_usuario_id], (error, results) => {
     if (error) {
       console.error('Error al crear equipo:', error);
       res.status(500).json({ success: false, message: 'Error al crear equipo' });
@@ -61,9 +63,9 @@ export const deleteTeam = (req, res) => {
 // Actualizar un equipo por ID
 export const updateTeam = (req, res) => {
   const { idTeam } = req.params;
-  const { nombre } = req.body;
+  const { nombre, id_usuario_id } = req.body;
 
-  connection.query('UPDATE equipo SET nombre = ? WHERE id_equipo = ?', [nombre, idTeam], (error, results) => {
+  connection.query('UPDATE equipo SET nombre = ?, id_usuario_id = ? WHERE id_equipo = ?', [nombre, id_usuario_id, idTeam], (error, results) => {
     if (error) {
       console.error('Error al actualizar equipo:', error);
       res.status(500).json({ success: false, message: 'Error al actualizar equipo' });
