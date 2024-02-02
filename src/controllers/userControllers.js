@@ -144,8 +144,8 @@ export const resetPassword = (req, res) => {
 
 // crear un usuario
 export const createUser = (req, res) => {
-  const { nombre, correo, contraseña , id_rol_id} = req.body;
-
+  const { nombre, correo, contraseña, id_rol_id = 3 } = req.body;
+  
   // Validar el nombre de usuario
   if (
     nombre.length < 6 ||
@@ -294,10 +294,12 @@ const getUserCount = () => {
 function generateAuthToken(user) {
   const secretKey = process.env.JWT_SECRET;
   const payload = {
-    idUser: user.id_user,
-    user_email: user.user_email,
-    user_name: user.user_name,
-    user_type: user.user_type
+    idUser: user.id_usuario,
+    user_email: user.correo,
+    user_name: user.nombre,
+    user_type: user.id_rol_id,
+    rol_name: user.nombre_rol,
+    rol_permissions: user.permisos_rol
   };
 
   const token = jwt.sign(payload, secretKey);
@@ -309,9 +311,14 @@ function generateAuthToken(user) {
 export const loginUser = (req, res) => {
   const correo = req.body.email;
   const contraseña = req.body.password;
+  console.log("El correo es: ", correo);
+  console.log("La contra es: ", contraseña);
 
   connection.query(
-    'SELECT * FROM usuario WHERE correo = ?',
+  `SELECT usuario.*, rol.nombre AS nombre_rol, rol.permisos AS permisos_rol
+  FROM usuario
+  INNER JOIN rol ON usuario.id_rol_id = rol.id_rol
+  WHERE correo = ?`,
     [correo],
     (err, results) => {
       console.log('Resultados de la base de datos:', results);
@@ -337,6 +344,8 @@ export const loginUser = (req, res) => {
 
         // Generar un token de autenticación
         const token = generateAuthToken(usuario);
+        // console.log("ESTO REGRESA");
+        // console.log(usuario);
 
         // res.status(200).json({ token, usuario });
         res.status(200).json({ token, usuario });
