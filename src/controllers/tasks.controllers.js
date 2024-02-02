@@ -28,9 +28,26 @@ const updateTaskStatus = (req, res) => {
     });
 };
 
+//* Create a task
+const createTask = (req, res) => {
+    const { nombre, descripcion, fecha_de_entrega, fecha_limite, ruta_documento, id_proyecto_id, id_estado_id, id_miembro_id } = req.body;
+
+    const query = "INSERT INTO tarea (nombre, descripcion, fecha_de_entrega, fecha_limite, ruta_documento, id_proyecto_id, id_estado_id, id_miembro_id) VALUES (?, ?, ?, ?, ?, ?, 3, ?)";
+
+    db.query(query, [nombre, descripcion, null, fecha_limite, null, null, id_estado_id, id_miembro_id], (err, result) => {
+        if (err) {
+            console.error("Error al insertar tarea:", err);
+            res.status(500).send("Error interno del servidor");
+        } else {
+            console.log("Tarea insertada con éxito");
+            res.status(200).send("Tarea insertada con éxito");
+        }
+    });
+};
 
 
 export default { 
     getTasksUser,
     updateTaskStatus,
+    createTask,
 };

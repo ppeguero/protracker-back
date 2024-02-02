@@ -160,3 +160,15 @@ SELECT
 FROM miembro;
 
 SELECT * FROM VW_TotalMiembros;
+
+-- Ver Nombre del miembro con su equipo
+CREATE VIEW VW_MiembrosEquipos AS
+SELECT 
+    miembro.id_miembro,
+    usuario.nombre AS nombre_miembro,
+    equipo.nombre AS nombre_equipo,
+    especialidad.nombre AS especialidad
+FROM miembro
+JOIN usuario ON miembro.id_usuario_id = usuario.id_usuario
+JOIN equipo ON miembro.id_equipo_id = equipo.id_equipo
+JOIN especialidad ON miembro.id_especialidad_id = especialidad.id_especialidad;

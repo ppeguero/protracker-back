@@ -74,3 +74,17 @@ export const updateTeam = (req, res) => {
     }
   });
 };
+
+export const getMemberOfTeamById = (req, res) => {
+  const { idTeam } = req.params;
+
+  connection.query('SELECT miembro.id_miembro,usuario.nombre AS nombre_miembro,especialidad.nombre AS especialidad FROM miembro JOIN usuario ON miembro.id_usuario_id = usuario.id_usuario JOIN equipo ON miembro.id_equipo_id = equipo.id_equipo JOIN especialidad ON miembro.id_especialidad_id = especialidad.id_especialidad WHERE equipo.id_equipo = ?;', [idTeam], (error, results) => {
+    if (error) {
+      console.error('Error al obtener miembros del equipo:', error);
+      res.status(500).json({ success: false, message: 'Error al obtener miembros del equipo' });
+    } else {
+      res.status(200).json({ success: true, miembros: results });
+    }
+  });
+}
+

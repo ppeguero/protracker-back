@@ -157,28 +157,44 @@ export const createUser = (req, res) => {
 
   const saltRounds = 15;
 
-  bcrypt.hash(contraseña, saltRounds, (err, hash) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ message: "Error Interno" });
-    }
-    connection.query(
-      "INSERT INTO usuario (nombre, correo, contraseña, id_rol_id) VALUES (?, ?, ?, ?)",
-      [nombre, correo, hash, id_rol_id],
-      (err, results) => {
+  // Verificar si el correo ya existe en la base de datos
+  connection.query(
+    "SELECT * FROM usuario WHERE correo = ?",
+    [correo],
+    (err, results) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Error interno del servidor" });
+      }
+
+      // Si el correo ya existe, devolver un error
+      if (results.length > 0) {
+        return res.status(400).json({ error: "Correo electrónico duplicado" });
+      }
+
+      // Si el correo no existe, proceder con la inserción del usuario
+      bcrypt.hash(contraseña, saltRounds, (err, hash) => {
         if (err) {
           console.error(err);
-          if (err.code === 'ER_DUP_ENTRY' && err.sqlMessage.includes('correo')) {
-            return res.status(400).json({ error: "Correo electrónico duplicado" });
-          }
-          return res.status(500).json({ message: "Error interno del servidor" });
+          return res.status(500).json({ message: "Error Interno" });
         }
+        connection.query(
+          "INSERT INTO usuario (nombre, correo, contraseña, id_rol_id) VALUES (?, ?, ?, ?)",
+          [nombre, correo, hash, id_rol_id],
+          (err, results) => {
+            if (err) {
+              console.error(err);
+              return res.status(500).json({ message: "Error interno del servidor" });
+            }
 
-        res.status(201).json({ message: "Usuario creado exitosamente" });
-      }
-    );
-  });
+            res.status(201).json({ message: "Usuario creado exitosamente" });
+          }
+        );
+      });
+    }
+  );
 };
+
 
 // eliminar un usuario
 export const deleteUser = (req, res) => {
@@ -235,7 +251,11 @@ export const updateUser = (req, res) => {
         connection.query(query, params, (err, results) => {
           if (err) {
             console.error(err);
-            reject(`Error al actualizar ${fieldName}`);
+            if (err.code === 'ER_DUP_ENTRY' && err.sqlMessage.includes('correo')) {
+              reject("Correo electrónico duplicado");
+            } else {
+              reject(`Error al actualizar ${fieldName}`);
+            }
           }
           resolve(`Campo ${fieldName} actualizado correctamente`);
         });
@@ -243,27 +263,65 @@ export const updateUser = (req, res) => {
     });
   };
 
-  if (nombre) {
-    updatePromises.push(updateField('nombre', nombre));
-  }
+  // Verificar si el nuevo correo ya existe en la base de datos
   if (correo) {
-    updatePromises.push(updateField('correo', correo));
-  }
-  if (contraseña) {
-    updatePromises.push(updateField('contraseña', contraseña));
-  }
-  if (id_rol_id) {
-    updatePromises.push(updateField('id_rol_id', id_rol_id));
-  }
+    connection.query(
+      "SELECT * FROM usuario WHERE correo = ? AND id_usuario <> ?",
+      [correo, idUsuario],
+      (err, results) => {
+        if (err) {
+          console.error(err);
+          return res.status(500).json({ error: 'Error interno del servidor' });
+        }
 
-  Promise.all(updatePromises)
-    .then((messages) => {
-      res.status(200).json({ messages });
-    })
-    .catch((error) => {
-      res.status(500).json({ error: error.message || 'Error interno del servidor' });
-    });
+        // Si el correo ya existe para otro usuario, devolver un error
+        if (results.length > 0) {
+          return res.status(400).json({ error: 'Correo electrónico duplicado' });
+        }
+
+        // Si el correo no existe, continuar con las actualizaciones
+        if (nombre) {
+          updatePromises.push(updateField('nombre', nombre));
+        }
+        updatePromises.push(updateField('correo', correo));
+        if (contraseña) {
+          updatePromises.push(updateField('contraseña', contraseña));
+        }
+        if (id_rol_id) {
+          updatePromises.push(updateField('id_rol_id', id_rol_id));
+        }
+
+        Promise.all(updatePromises)
+          .then((messages) => {
+            res.status(200).json({ messages });
+          })
+          .catch((error) => {
+            res.status(500).json({ error: error.message || 'Error interno del servidor' });
+          });
+      }
+    );
+  } else {
+    // Si el correo no se proporciona, continuar con las actualizaciones sin verificar duplicados
+    if (nombre) {
+      updatePromises.push(updateField('nombre', nombre));
+    }
+    if (contraseña) {
+      updatePromises.push(updateField('contraseña', contraseña));
+    }
+    if (id_rol_id) {
+      updatePromises.push(updateField('id_rol_id', id_rol_id));
+    }
+
+    Promise.all(updatePromises)
+      .then((messages) => {
+        res.status(200).json({ messages });
+      })
+      .catch((error) => {
+        res.status(500).json({ error: error.message || 'Error interno del servidor' });
+      });
+  }
 };
+
 
 
 // Contador de usuarios
@@ -294,10 +352,12 @@ const getUserCount = () => {
 function generateAuthToken(user) {
   const secretKey = process.env.JWT_SECRET;
   const payload = {
-    idUser: user.id_user,
-    user_email: user.user_email,
-    user_name: user.user_name,
-    user_type: user.user_type
+    idUser: user.id_usuario,
+    user_email: user.correo,
+    user_name: user.nombre,
+    user_type: user.id_rol_id,
+    rol_name: user.nombre_rol,
+    rol_permissions: user.permisos_rol
   };
 
   const token = jwt.sign(payload, secretKey);
@@ -309,9 +369,14 @@ function generateAuthToken(user) {
 export const loginUser = (req, res) => {
   const correo = req.body.email;
   const contraseña = req.body.password;
+  console.log("El correo es: ", correo);
+  console.log("La contra es: ", contraseña);
 
   connection.query(
-    'SELECT * FROM usuario WHERE correo = ?',
+  `SELECT usuario.*, rol.nombre AS nombre_rol, rol.permisos AS permisos_rol
+  FROM usuario
+  INNER JOIN rol ON usuario.id_rol_id = rol.id_rol
+  WHERE correo = ?`,
     [correo],
     (err, results) => {
       console.log('Resultados de la base de datos:', results);
@@ -337,6 +402,8 @@ export const loginUser = (req, res) => {
 
         // Generar un token de autenticación
         const token = generateAuthToken(usuario);
+        // console.log("ESTO REGRESA");
+        // console.log(usuario);
 
         // res.status(200).json({ token, usuario });
         res.status(200).json({ token, usuario });
