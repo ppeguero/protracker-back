@@ -143,7 +143,7 @@ export const resetPassword = (req, res) => {
 }
 
 // crear un usuario
-export const createUser = (req, res) => {
+export const createUser = (req, res) => { 
   const { nombre, correo, contraseña, id_rol_id = 3 } = req.body;
   
   // Validar el nombre de usuario
@@ -157,28 +157,44 @@ export const createUser = (req, res) => {
 
   const saltRounds = 15;
 
-  bcrypt.hash(contraseña, saltRounds, (err, hash) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ message: "Error Interno" });
-    }
-    connection.query(
-      "INSERT INTO usuario (nombre, correo, contraseña, id_rol_id) VALUES (?, ?, ?, ?)",
-      [nombre, correo, hash, id_rol_id],
-      (err, results) => {
+  // Verificar si el correo ya existe en la base de datos
+  connection.query(
+    "SELECT * FROM usuario WHERE correo = ?",
+    [correo],
+    (err, results) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Error interno del servidor" });
+      }
+
+      // Si el correo ya existe, devolver un error
+      if (results.length > 0) {
+        return res.status(400).json({ error: "Correo electrónico duplicado" });
+      }
+
+      // Si el correo no existe, proceder con la inserción del usuario
+      bcrypt.hash(contraseña, saltRounds, (err, hash) => {
         if (err) {
           console.error(err);
-          if (err.code === 'ER_DUP_ENTRY' && err.sqlMessage.includes('correo')) {
-            return res.status(400).json({ error: "Correo electrónico duplicado" });
-          }
-          return res.status(500).json({ message: "Error interno del servidor" });
+          return res.status(500).json({ message: "Error Interno" });
         }
+        connection.query(
+          "INSERT INTO usuario (nombre, correo, contraseña, id_rol_id) VALUES (?, ?, ?, ?)",
+          [nombre, correo, hash, id_rol_id],
+          (err, results) => {
+            if (err) {
+              console.error(err);
+              return res.status(500).json({ message: "Error interno del servidor" });
+            }
 
-        res.status(201).json({ message: "Usuario creado exitosamente" });
-      }
-    );
-  });
+            res.status(201).json({ message: "Usuario creado exitosamente" });
+          }
+        );
+      });
+    }
+  );
 };
+
 
 // eliminar un usuario
 export const deleteUser = (req, res) => {
@@ -235,7 +251,11 @@ export const updateUser = (req, res) => {
         connection.query(query, params, (err, results) => {
           if (err) {
             console.error(err);
-            reject(`Error al actualizar ${fieldName}`);
+            if (err.code === 'ER_DUP_ENTRY' && err.sqlMessage.includes('correo')) {
+              reject("Correo electrónico duplicado");
+            } else {
+              reject(`Error al actualizar ${fieldName}`);
+            }
           }
           resolve(`Campo ${fieldName} actualizado correctamente`);
         });
@@ -243,27 +263,65 @@ export const updateUser = (req, res) => {
     });
   };
 
-  if (nombre) {
-    updatePromises.push(updateField('nombre', nombre));
-  }
+  // Verificar si el nuevo correo ya existe en la base de datos
   if (correo) {
-    updatePromises.push(updateField('correo', correo));
-  }
-  if (contraseña) {
-    updatePromises.push(updateField('contraseña', contraseña));
-  }
-  if (id_rol_id) {
-    updatePromises.push(updateField('id_rol_id', id_rol_id));
-  }
+    connection.query(
+      "SELECT * FROM usuario WHERE correo = ? AND id_usuario <> ?",
+      [correo, idUsuario],
+      (err, results) => {
+        if (err) {
+          console.error(err);
+          return res.status(500).json({ error: 'Error interno del servidor' });
+        }
 
-  Promise.all(updatePromises)
-    .then((messages) => {
-      res.status(200).json({ messages });
-    })
-    .catch((error) => {
-      res.status(500).json({ error: error.message || 'Error interno del servidor' });
-    });
+        // Si el correo ya existe para otro usuario, devolver un error
+        if (results.length > 0) {
+          return res.status(400).json({ error: 'Correo electrónico duplicado' });
+        }
+
+        // Si el correo no existe, continuar con las actualizaciones
+        if (nombre) {
+          updatePromises.push(updateField('nombre', nombre));
+        }
+        updatePromises.push(updateField('correo', correo));
+        if (contraseña) {
+          updatePromises.push(updateField('contraseña', contraseña));
+        }
+        if (id_rol_id) {
+          updatePromises.push(updateField('id_rol_id', id_rol_id));
+        }
+
+        Promise.all(updatePromises)
+          .then((messages) => {
+            res.status(200).json({ messages });
+          })
+          .catch((error) => {
+            res.status(500).json({ error: error.message || 'Error interno del servidor' });
+          });
+      }
+    );
+  } else {
+    // Si el correo no se proporciona, continuar con las actualizaciones sin verificar duplicados
+    if (nombre) {
+      updatePromises.push(updateField('nombre', nombre));
+    }
+    if (contraseña) {
+      updatePromises.push(updateField('contraseña', contraseña));
+    }
+    if (id_rol_id) {
+      updatePromises.push(updateField('id_rol_id', id_rol_id));
+    }
+
+    Promise.all(updatePromises)
+      .then((messages) => {
+        res.status(200).json({ messages });
+      })
+      .catch((error) => {
+        res.status(500).json({ error: error.message || 'Error interno del servidor' });
+      });
+  }
 };
+
 
 
 // Contador de usuarios
