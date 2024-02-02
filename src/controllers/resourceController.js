@@ -12,6 +12,18 @@ export const getResources = (req,res) => {
     });
 };
 
+export const getResourceByProjectId = (req, res) => {
+    const projectId = req.query.id_proyecto_id;
+    connection.query("SELECT * FROM recurso WHERE id_proyecto_id = ?", [projectId], (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ message: "Error interno del servidor" });
+        }
+        res.status(200).json(results);
+    });
+};
+
+
 export const getResource = (req, res) => {
     const id_resource = req.params.id;
     connection.query("SELECT * FROM recurso WHERE id_recurso = ?", [id_resource], (err, results) => {
@@ -113,6 +125,12 @@ export const getResourceRequest = (req, res) => {
         }
         res.status(200).json(results[0])
     })
+}
+
+export const getResourceRequestByUser = (req, res) => {
+    const id_user = req.query;
+
+    connection.query("SELECT * FROM s")
 }
 
 export const createResourceRequest = (req, res)=> {

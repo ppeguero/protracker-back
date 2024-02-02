@@ -12,6 +12,7 @@ resourceRoutes.patch('/resource/request/:id', resourceController.updateResourceR
 resourceRoutes.post('/resource/accept-request/:id', resourceController.acceptResourceRequest)
 
 resourceRoutes.get('/resource', resourceController.getResources)
+resourceRoutes.get('/resource-by-project', resourceController.getResourceByProjectId);
 resourceRoutes.get('/resource/:id', resourceController.getResource)
 resourceRoutes.post('/resource', resourceController.createResource)
 resourceRoutes.patch('/resource/:id', resourceController.updateResource)
