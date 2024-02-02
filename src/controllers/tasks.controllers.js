@@ -1,6 +1,6 @@
 import db from '../db.js'
 
-//* Obtener las tareas con toda su información de un usuario específico
+//* Get the tasks with all their information from a specific user
 const getTasksUser = (req, res) => {
     db.query("CALL SP_GetUserTasks(?)",[req.params.idUser],(err,result) => {
         if (err) {
@@ -16,7 +16,7 @@ const getTasksUser = (req, res) => {
     });
 }
 
-//* Actualizar el estado de una tarea a completado
+//* Update the status of a task to completed
 const updateTaskStatus = (req, res) => {
     db.query("UPDATE tarea SET id_estado_id = 2 WHERE id_tarea = ?;", [req.params.idTasks], (err, result) => {
         if (err) {
@@ -27,6 +27,8 @@ const updateTaskStatus = (req, res) => {
         }
     });
 };
+
+
 
 export default { 
     getTasksUser,

@@ -94,3 +94,69 @@ CREATE TABLE solicitud_recurso (
 );
 
 DROP TABLE recurso;
+
+-- STORED PROCEDURE - MANUEL PASOS
+-- Obtener la tarea de un usuario en especifico
+DELIMITER //
+CREATE PROCEDURE SP_GetUserTasks(ID_USUARIO INT)
+BEGIN
+    SELECT tarea.id_tarea, tarea.nombre, tarea.descripcion, tarea.fecha_de_entrega, tarea.fecha_limite, tarea.ruta_documento,
+           proyecto.nombre AS nombre_proyecto, estado.nombre AS estado_tarea
+    FROM tarea
+    JOIN proyecto ON tarea.id_proyecto_id = proyecto.id_proyecto
+    JOIN estado ON tarea.id_estado_id = estado.id_estado
+    JOIN miembro ON tarea.id_miembro_id = miembro.id_miembro
+    JOIN usuario ON miembro.id_usuario_id = usuario.id_usuario
+    WHERE usuario.id_usuario = ID_USUARIO;
+END
+// DELIMITER ;
+
+CALL SP_GetUserTasks(1);
+
+-- Actualizar el estado de una tarea
+DELIMITER //
+CREATE PROCEDURE SP_CompleteTask (ID_TAREA INT)
+BEGIN
+    UPDATE tarea SET id_estado_id = 2 WHERE id_tarea = ID_TAREA;
+END 
+// DELIMITER ;
+
+-- ESTADISTICAS
+
+-- Total de TareasCompletadas
+CREATE VIEW VW_TareasCompletadas AS
+SELECT 
+    COUNT(*) AS TareasCompletadas,
+    ROUND(AVG(CASE WHEN id_estado_id = 2 THEN 1 ELSE 0 END) * 100) AS PromedioCompletadas
+FROM tarea;
+
+SELECT * FROM V	W_TareasCompletadas;
+
+-- Equipos trabajando
+CREATE VIEW VW_EquiposTrabajando AS
+SELECT
+    COUNT(DISTINCT equipo.id_equipo) AS total_equipos,
+    COUNT(DISTINCT miembro.id_miembro) AS cantidad_miembros_trabajando
+FROM equipo
+LEFT JOIN miembro ON equipo.id_equipo = miembro.id_equipo_id
+WHERE miembro.id_miembro IS NOT NULL;
+
+SELECT * FROM VW_EquiposTrabajando;
+
+CREATE VIEW VW_ProyectosEnProceso AS
+SELECT
+    COUNT(proyecto.id_proyecto) AS cantidad_proyectos_en_proceso
+FROM proyecto
+WHERE proyecto.id_estado_id = 2;
+
+SELECT * FROM VW_ProyectosEnProceso;
+
+
+-- Total de miembros
+
+CREATE VIEW VW_TotalMiembros AS
+SELECT
+    COUNT(DISTINCT miembro.id_miembro) AS total_miembros
+FROM miembro;
+
+SELECT * FROM VW_TotalMiembros;
