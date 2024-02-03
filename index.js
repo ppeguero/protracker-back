@@ -43,10 +43,10 @@ app.use(cors({
 // Rutas
 app.use('/api', taskRoutes);
 app.use('/api', userRoutes);
-app.use('/api', statisticsRoutes)
-app.use('/api', teamRoutes)
-app.use('/api', projectRoutes)
-app.use('/api', memberRoutes)
+app.use('/api', statisticsRoutes);
+app.use('/api', teamRoutes);
+app.use('/api', projectRoutes);
+app.use('/api', memberRoutes);
 
 
 // Inicializar servidor HTTPS

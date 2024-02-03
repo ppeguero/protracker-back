@@ -25,7 +25,7 @@ export const getProjects = (req, res) => {
   
   // Obtener un proyecto por ID con información relacionada
   export const getProject = (req, res) => {
-    const projectId = req.params.id;
+    const projectId = req.params.idProject;
     const query = `
       SELECT 
         p.*,
@@ -108,4 +108,10 @@ export const updateProject = (req, res) => {
         }
       }
     });
+<<<<<<< HEAD
   };
+=======
+  };
+  
+
+>>>>>>> 5a7f88ff6c79b330e7efbcc076d48dab3fcaae65
