@@ -108,10 +108,6 @@ export const updateProject = (req, res) => {
         }
       }
     });
-<<<<<<< HEAD
-  };
-=======
   };
   
 
->>>>>>> 5a7f88ff6c79b330e7efbcc076d48dab3fcaae65
