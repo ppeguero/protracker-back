@@ -3,7 +3,6 @@ import bcrypt from "bcrypt";
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 
-
 // obtener todos los usuarios
 export const getUsers = (req, res) => {
   connection.query(`SELECT usuario.*, rol.nombre AS nombre_rol
@@ -149,14 +148,6 @@ export const createUser = (req, res) => {
   console.log(correo);
   console.log(contraseña);
   console.log(id_rol_id);
-  // Validar el nombre de usuario
-  // if (
-  //   nombre.length < 6 ||
-  //   !/^[a-zA-Z0-9]+$/.test(nombre) ||
-  //   /\s/.test(nombre)
-  // ) {
-  //   return res.status(400).json({ error: "El nombre de usuario no cumple con los requisitos." });
-  // }
 
   const saltRounds = 15;
 
@@ -172,7 +163,7 @@ export const createUser = (req, res) => {
 
       // Si el correo ya existe, devolver un error
       if (results.length > 0) {
-        return res.status(400).json({ error: "Correo electrónico duplicado" });
+        return res.status(400).json({ message: "El correo electrónico ya se encuentra registrado" });
       }
 
       // Si el correo no existe, proceder con la inserción del usuario
@@ -326,7 +317,6 @@ export const updateUser = (req, res) => {
 };
 
 
-
 // Contador de usuarios
 export const contadorUsuario = async (req, res) => {
   try {
@@ -375,21 +365,28 @@ export const loginUser = (req, res) => {
   console.log("El correo es: ", correo);
   console.log("La contra es: ", contraseña);
 
+  // const csrfTokenFromClient = req.headers['x-csrf-token']; // Assuming you set it as 'X-CSRF-Token' in the client
+  // const csrfTokenFromServer = req.csrfToken();
+
+  // if (csrfTokenFromClient !== csrfTokenFromServer) {
+  //   return res.status(403).json({ error: 'CSRF Token Mismatch' });
+  // }
+
   connection.query(
-  `SELECT usuario.*, rol.nombre AS nombre_rol, rol.permisos AS permisos_rol
-  FROM usuario
-  INNER JOIN rol ON usuario.id_rol_id = rol.id_rol
-  WHERE correo = ?`,
+    `SELECT usuario.*, rol.nombre AS nombre_rol, rol.permisos AS permisos_rol
+    FROM usuario
+    INNER JOIN rol ON usuario.id_rol_id = rol.id_rol
+    WHERE correo = ?`,
     [correo],
     (err, results) => {
       console.log('Resultados de la base de datos:', results);
 
       if (err) {
         console.error(err);
-        return res.status(500).json({ message: 'Error interno del servidor' });
+        return res.status(500).json({ error: 'Error interno del servidor' });
       }
       if (results.length === 0) {
-        return res.status(401).json({ message: 'No se ha encontrado el usuario' });
+        return res.status(401).json({ error: 'No se ha encontrado el usuario' });
       }
       const usuario = results[0];
 
@@ -397,20 +394,18 @@ export const loginUser = (req, res) => {
         console.log('Comparando contraseñas:', isMatch);
         if (bcryptErr) {
           console.error(bcryptErr);
-          return res.status(500).json({ message: 'Error interno del servidor' });
+          return res.status(500).json({ error: 'Error interno del servidor' });
         }
         if (!isMatch) {
-          return res.status(401).json({ message: 'Contraseña incorrecta' });
+          return res.status(401).json({ error: 'Contraseña incorrecta' });
         }
 
         // Generar un token de autenticación
         const token = generateAuthToken(usuario);
-        // console.log("ESTO REGRESA");
-        // console.log(usuario);
 
-        // res.status(200).json({ token, usuario });
         res.status(200).json({ token, usuario });
       });
     }
   );
 };
+
