@@ -14,8 +14,6 @@ export const getTeams = (req, res) => {
   });
 };
 
-
-
 // Obtener un equipo por ID
 export const getTeam = (req, res) => {
   const { idTeam } = sanitizer.sanitize.prepareSanitize(req.params, {
@@ -36,6 +34,7 @@ export const getTeam = (req, res) => {
     }
   });
 };
+
 
 // Crear un equipo
 export const createTeam = (req, res) => {
