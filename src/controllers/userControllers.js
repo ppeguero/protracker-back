@@ -2,6 +2,7 @@ import connection from "../routes/db.js";
 import bcrypt from "bcrypt";
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import sanitizer from 'perfect-express-sanitizer';
 
 
 // obtener todos los usuarios
@@ -19,7 +20,12 @@ export const getUsers = (req, res) => {
 
 // obtener un usuario
 export const getUser = (req, res) => {
-  const idUser = req.params.id;
+  const idUser = sanitizer.sanitize.prepareSanitize(req.params.id, {
+    xss: true,
+    noSql: true,
+    sql: true,
+    level: 5,
+  });
 
   connection.query(
     `SELECT usuario.*, rol.nombre AS nombre_rol
@@ -50,7 +56,12 @@ function generateRecoveryCode() {
 
 // buscar usuario por email
 export const sendRecoveryCode = (req, res) => {
-  const { correo } = req.body;
+  const { correo } = sanitizer.sanitize.prepareSanitize(req.body, {
+    xss: true,
+    noSql: true,
+    sql: true,
+    level: 5,
+  });
 
   connection.query("SELECT * FROM usuario WHERE correo = ?", [correo], 
   (err, results)=> {
@@ -83,7 +94,12 @@ export const sendRecoveryCode = (req, res) => {
 }
 
 export const validateRecoveryCode = (req, res) => {
-  const { correo, token } = req.body;
+  const { correo, token } = sanitizer.sanitize.prepareSanitize(req.body, {
+    xss: true,
+    noSql: true,
+    sql: true,
+    level: 5,
+  });
   console.log("Correo:", correo);
   console.log("Recovery Code enviado:", token);
 
@@ -119,7 +135,13 @@ export const validateRecoveryCode = (req, res) => {
 
 // recuperar la contraseña
 export const resetPassword = (req, res) => {
-  const {correo, contraseña} = req.body;
+  const {correo, contraseña} = sanitizer.sanitize.prepareSanitize(req.body, {
+    xss: true,
+    noSql: true,
+    sql: true,
+    level: 5,
+  });
+
   console.log("La nueva contraseña es", contraseña)
   console.log("El email es", correo)
   
@@ -143,15 +165,16 @@ export const resetPassword = (req, res) => {
 }
 
 // crear un usuario
-export const createUser = (req, res) => { 
-  // const { nombre, correo, contraseña , id_rol_id} = req.body;
+export const createUser = (req, res) => {
+  // Sanitizar los datos de entrada
+  const { nombre, correo, contraseña, id_rol_id = 3 } = sanitizer.sanitize.prepareSanitize(req.body, {
+    xss: true,
+    noSql: true,
+    sql: true,
+    level: 5,
+  });
 
-  const { nombre, correo, contraseña, id_rol_id = 3 } = req.body;
-  console.log(nombre);
-  console.log(correo);
-  console.log(contraseña);
-  console.log(id_rol_id);
-  // Validar el nombre de usuario
+  // Validar el nombre de usuario si es necesario
   // if (
   //   nombre.length < 6 ||
   //   !/^[a-zA-Z0-9]+$/.test(nombre) ||
@@ -203,7 +226,12 @@ export const createUser = (req, res) => {
 
 // eliminar un usuario
 export const deleteUser = (req, res) => {
-  const idUsuario = req.params.id;
+  const idUsuario = sanitizer.sanitize.prepareSanitize(req.params.id, {
+    xss: true,
+    noSql: true,
+    sql: true,
+    level: 5,
+  });
 
   connection.query(
     "DELETE FROM usuario WHERE id_usuario = ?",
@@ -229,8 +257,19 @@ export const deleteUser = (req, res) => {
 
 
 export const updateUser = (req, res) => {
-  const idUsuario = req.params.id;
-  const { nombre, correo, contraseña, id_rol_id } = req.body;
+  const idUsuario = sanitizer.sanitize.prepareSanitize(req.params.id, {
+    xss: true,
+    noSql: true,
+    sql: true,
+    level: 5,
+  });
+
+  const { nombre, correo, contraseña, id_rol_id } = sanitizer.sanitize.prepareSanitize(req.body, {
+    xss: true,
+    noSql: true,
+    sql: true,
+    level: 5,
+  });
 
   const updatePromises = [];
 
@@ -372,10 +411,21 @@ function generateAuthToken(user) {
 
 
 export const loginUser = (req, res) => {
-  const correo = req.body.email;
-  const contraseña = req.body.password;
-  console.log("El correo es: ", correo);
-  console.log("La contra es: ", contraseña);
+  const correo = sanitizer.sanitize.prepareSanitize(req.body.email, {
+    xss: true,
+    noSql: true,
+    sql: true,
+    level: 5,
+  });
+  const contraseña = sanitizer.sanitize.prepareSanitize(req.body.password, {
+    xss: true,
+    noSql: true,
+    sql: true,
+    level: 5,
+  });
+
+  // console.log("El correo es: ", correo);
+  // console.log("La contra es: ", contraseña);
 
   connection.query(
   `SELECT usuario.*, rol.nombre AS nombre_rol, rol.permisos AS permisos_rol
@@ -384,7 +434,7 @@ export const loginUser = (req, res) => {
   WHERE correo = ?`,
     [correo],
     (err, results) => {
-      console.log('Resultados de la base de datos:', results);
+      // console.log('Resultados de la base de datos:', results);
 
       if (err) {
         console.error(err);

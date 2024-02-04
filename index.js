@@ -9,6 +9,7 @@ import teamRoutes from './src/routes/teams.routes.js';
 import projectRoutes from './src/routes/projects.routes.js';
 import memberRoutes from './src/routes/members.routes.js';
 import statisticsRoutes from './src/routes/statistics.routes.js';
+import sanitizer from 'perfect-express-sanitizer';
 
 dotenv.config();
 
@@ -23,6 +24,14 @@ const options = {
 
 // Middleware
 app.use(express.json());
+
+app.use(
+  sanitizer.clean({
+    xss: true,
+    noSql: true,
+    sql: true,
+  })
+);
 
 // Middleware para manejar errores
 app.use((err, req, res, next) => {
@@ -39,7 +48,6 @@ app.use(cors({
   optionsSuccessStatus: 204, // Responde con 204 No Content para las preflight requests
 }));
 
-
 // Rutas
 app.use('/api', taskRoutes);
 app.use('/api', userRoutes);
@@ -48,7 +56,7 @@ app.use('/api', teamRoutes);
 app.use('/api', projectRoutes);
 app.use('/api', memberRoutes);
 
-
 // Inicializar servidor HTTPS
 https.createServer(options, app).listen(PORT, () => {
-  console.log(`Servidor corriendo exitosamente en el puerto ${PORT} con HTTPS :)`)});
+  console.log(`Servidor corriendo exitosamente en el puerto ${PORT} con HTTPS :)`)
+});

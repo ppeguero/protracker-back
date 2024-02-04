@@ -1,8 +1,18 @@
 import db from '../db.js'
+import sanitizer from 'perfect-express-sanitizer';
+
 
 //* Get the tasks with all their information from a specific user
 const getTasksUser = (req, res) => {
-    db.query("CALL SP_GetUserTasks(?)",[req.params.idUser],(err,result) => {
+
+    idUser = sanitizer.sanitize.prepareSanitize(req.params.idUser, {
+        xss: true,
+        noSql: true,
+        sql: true,
+        level: 5,
+      });
+
+    db.query("CALL SP_GetUserTasks(?)",[idUser],(err,result) => {
         if (err) {
             console.error(err);
             res.status(500).send(err);
@@ -18,7 +28,15 @@ const getTasksUser = (req, res) => {
 
 //* Update the status of a task to completed
 const updateTaskStatus = (req, res) => {
-    db.query("UPDATE tarea SET id_estado_id = 2 WHERE id_tarea = ?;", [req.params.idTasks], (err, result) => {
+
+    idTasks = sanitizer.sanitize.prepareSanitize(req.params.idTasks, {
+        xss: true,
+        noSql: true,
+        sql: true,
+        level: 5,
+      });
+
+    db.query("UPDATE tarea SET id_estado_id = 2 WHERE id_tarea = ?;", [idTasks], (err, result) => {
         if (err) {
             console.error(err);
             res.status(500).send(err);
@@ -30,7 +48,12 @@ const updateTaskStatus = (req, res) => {
 
 //* Create a task
 const createTask = (req, res) => {
-    const { nombre, descripcion, fecha_de_entrega, fecha_limite, ruta_documento, id_proyecto_id, id_estado_id, id_miembro_id } = req.body;
+    const { nombre, descripcion, fecha_de_entrega, fecha_limite, ruta_documento, id_proyecto_id, id_estado_id, id_miembro_id } = sanitizer.sanitize.prepareSanitize(req.body, {
+        xss: true,
+        noSql: true,
+        sql: true,
+        level: 5,
+      });
 
     const query = "INSERT INTO tarea (nombre, descripcion, fecha_de_entrega, fecha_limite, ruta_documento, id_proyecto_id, id_estado_id, id_miembro_id) VALUES (?, ?, ?, ?, ?, ?, 3, ?)";
 

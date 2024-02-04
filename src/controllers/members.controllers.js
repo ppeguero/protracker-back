@@ -1,4 +1,6 @@
 import connection from "../routes/db.js";
+import sanitizer from 'perfect-express-sanitizer';
+
 
 // Obtener todos los miembros con información relacionada
 export const getMembers = (req, res) => {
@@ -29,7 +31,12 @@ export const getMembers = (req, res) => {
   );
 };
 export const getMember = (req, res) => {
-  const memberId = req.params.idMember;
+  const memberId = sanitizer.sanitize.prepareSanitize(req.params.idMember, {
+    xss: true,
+    noSql: true,
+    sql: true,
+    level: 5,
+  });
 
   connection.query(
     `SELECT 
@@ -63,7 +70,12 @@ export const getMember = (req, res) => {
 };
 
 export const getMemberWithId = (req, res) => {
-  const memberId = req.params.idMember;
+  const memberId = sanitizer.sanitize.prepareSanitize(req.params.idMember, {
+    xss: true,
+    noSql: true,
+    sql: true,
+    level: 5,
+  });
 
   connection.query(
     `SELECT 
@@ -99,7 +111,12 @@ export const getMemberWithId = (req, res) => {
 
 // Crear un miembro
 export const createMember = (req, res) => {
-  const { id_usuario_id, id_equipo_id, id_especialidad_id } = req.body;
+  const { id_usuario_id, id_equipo_id, id_especialidad_id } = sanitizer.sanitize.prepareSanitize(req.body, {
+    xss: true,
+    noSql: true,
+    sql: true,
+    level: 5,
+  });
 
   connection.query(
     "INSERT INTO miembro (id_usuario_id, id_equipo_id, id_especialidad_id) VALUES (?, ?, ?)",
@@ -117,7 +134,12 @@ export const createMember = (req, res) => {
 
 // Eliminar un miembro por ID
 export const deleteMember = (req, res) => {
-  const memberId = req.params.idMember;
+  const memberId = sanitizer.sanitize.prepareSanitize(req.params.idMember, {
+    xss: true,
+    noSql: true,
+    sql: true,
+    level: 5,
+  });
 
   connection.query(
     "DELETE FROM miembro WHERE id_miembro = ?",
@@ -137,8 +159,19 @@ export const deleteMember = (req, res) => {
 
 // Actualizar un miembro por ID
 export const updateMember = (req, res) => {
-  const memberId = req.params.idMember;
-  const { id_usuario_id, id_equipo_id, id_especialidad_id } = req.body;
+  const memberId = sanitizer.sanitize.prepareSanitize(req.params.idMember, {
+    xss: true,
+    noSql: true,
+    sql: true,
+    level: 5,
+  });
+
+  const { id_usuario_id, id_equipo_id, id_especialidad_id } = sanitizer.sanitize.prepareSanitize(req.body, {
+    xss: true,
+    noSql: true,
+    sql: true,
+    level: 5,
+  });
 
   connection.query(
     "UPDATE miembro SET id_usuario_id = ?, id_equipo_id = ?, id_especialidad_id = ? WHERE id_miembro = ?",
