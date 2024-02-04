@@ -9,11 +9,17 @@ import teamRoutes from './src/routes/teams.routes.js';
 import projectRoutes from './src/routes/projects.routes.js';
 import memberRoutes from './src/routes/members.routes.js';
 import statisticsRoutes from './src/routes/statistics.routes.js';
+import rolesRoutes from './src/routes/roles.routes.js';
+import statusRoutes from './src/routes/status.routes.js';
+import helmet from 'helmet';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 8080;
+
+app.use(helmet());
+
 
 // Configuración de HTTPS
 const options = {
@@ -47,6 +53,8 @@ app.use('/api', statisticsRoutes);
 app.use('/api', teamRoutes);
 app.use('/api', projectRoutes);
 app.use('/api', memberRoutes);
+app.use('/api', rolesRoutes);
+app.use('/api', statusRoutes);
 
 
 // Inicializar servidor HTTPS

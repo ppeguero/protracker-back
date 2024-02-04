@@ -28,8 +28,6 @@ const updateTaskStatus = (req, res) => {
     });
 };
 
-
-
 export default { 
     getTasksUser,
     updateTaskStatus,
