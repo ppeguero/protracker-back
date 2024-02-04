@@ -1,4 +1,5 @@
 import connection from "../routes/db.js";
+import sanitizer from 'perfect-express-sanitizer';
 
 // Obtener todos los proyectos con información relacionada
 export const getProjects = (req, res) => {
@@ -25,7 +26,12 @@ export const getProjects = (req, res) => {
   
   // Obtener un proyecto por ID con información relacionada
   export const getProject = (req, res) => {
-    const projectId = req.params.idProject;
+    const projectId = sanitizer.sanitize.prepareSanitize(req.params.idProject, {
+      xss: true,
+      noSql: true,
+      sql: true,
+      level: 5,
+    });
     const query = `
       SELECT 
         p.*,
@@ -54,7 +60,13 @@ export const getProjects = (req, res) => {
 
 // Crear un proyecto
 export const createProject = (req, res) => {
-  const { nombre, descripcion, fecha_inicio, id_usuario_id, id_estado_id, id_equipo_id } = req.body;
+  const { nombre, descripcion, fecha_inicio, id_usuario_id, id_estado_id, id_equipo_id } = sanitizer.sanitize.prepareSanitize(req.body, {
+    xss: true,
+    noSql: true,
+    sql: true,
+    level: 5,
+  });
+
   const insertQuery = 'INSERT INTO proyecto (nombre, descripcion, fecha_inicio, id_usuario_id, id_estado_id, id_equipo_id) VALUES (?, ?, ?, ?, ?, ?)';
   
   connection.query(insertQuery, [nombre, descripcion, fecha_inicio, id_usuario_id, id_estado_id, id_equipo_id], (error, results) => {
@@ -68,7 +80,13 @@ export const createProject = (req, res) => {
 
 // Eliminar un proyecto por ID
 export const deleteProject = (req, res) => {
-  const projectId = req.params.idProject;
+  const projectId = sanitizer.sanitize.prepareSanitize(req.params.idProject, {
+      xss: true,
+      noSql: true,
+      sql: true,
+      level: 5,
+    });
+
   const deleteQuery = 'DELETE FROM proyecto WHERE id_proyecto = ?';
   
   connection.query(deleteQuery, [projectId], (error, results) => {
@@ -82,8 +100,19 @@ export const deleteProject = (req, res) => {
 
 // Actualizar un proyecto por ID
 export const updateProject = (req, res) => {
-    const projectId = req.params.idProject;
-    const { nombre, descripcion, fecha_inicio, id_usuario_id, id_estado_id, id_equipo_id } = req.body;
+    const projectId = sanitizer.sanitize.prepareSanitize(req.params.idProject, {
+      xss: true,
+      noSql: true,
+      sql: true,
+      level: 5,
+    });
+
+    const { nombre, descripcion, fecha_inicio, id_usuario_id, id_estado_id, id_equipo_id } = sanitizer.sanitize.prepareSanitize(req.body, {
+      xss: true,
+      noSql: true,
+      sql: true,
+      level: 5,
+    });
   
     // Validar existencia del proyecto
     const checkProjectQuery = 'SELECT * FROM proyecto WHERE id_proyecto = ?';

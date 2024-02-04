@@ -12,6 +12,7 @@ import statisticsRoutes from './src/routes/statistics.routes.js';
 import rolesRoutes from './src/routes/roles.routes.js';
 import statusRoutes from './src/routes/status.routes.js';
 import helmet from 'helmet';
+import sanitizer from 'perfect-express-sanitizer';
 
 dotenv.config();
 
@@ -30,6 +31,14 @@ const options = {
 // Middleware
 app.use(express.json());
 
+app.use(
+  sanitizer.clean({
+    xss: true,
+    noSql: true,
+    sql: true,
+  })
+);
+
 // Middleware para manejar errores
 app.use((err, req, res, next) => {
   console.error(err.stack);
@@ -45,7 +54,6 @@ app.use(cors({
   optionsSuccessStatus: 204, // Responde con 204 No Content para las preflight requests
 }));
 
-
 // Rutas
 app.use('/api', taskRoutes);
 app.use('/api', userRoutes);
@@ -56,7 +64,7 @@ app.use('/api', memberRoutes);
 app.use('/api', rolesRoutes);
 app.use('/api', statusRoutes);
 
-
 // Inicializar servidor HTTPS
 https.createServer(options, app).listen(PORT, () => {
-  console.log(`Servidor corriendo exitosamente en el puerto ${PORT} con HTTPS :)`)});
+  console.log(`Servidor corriendo exitosamente en el puerto ${PORT} con HTTPS :)`)
+});
