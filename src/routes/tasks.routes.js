@@ -1,8 +1,10 @@
 import express from 'express';
 const router = express.Router();
-import taskController from '../controllers/tasks.controllers.js';
+import { getTasksUser, createTask, updateTaskStatus, getTasks} from '../controllers/tasks.controllers.js'; // Cambiado a tasksController
 
-router.get("/tasks/:idUser",taskController.getTasksUser) //* Get the tasks with all their information from a specific user
-router.put("/complete-task/:idTasks",taskController.updateTaskStatus) //* Update the status of a task to completed
+router.get("/tasks/:idUser", getTasksUser); // Cambiado a tasksController
+router.get("/tasks", getTasks); // Cambiado a tasksController
+router.post("/tasks/", createTask); // Cambiado a tasksController
+router.put("/complete-task/:idTasks", updateTaskStatus); // Cambiado a tasksController
 
 export default router;
