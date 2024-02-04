@@ -117,7 +117,7 @@ export const getMemberWithIdTeam = (req, res) => {
     level: 5,
   });
 
-  console.log(idMemberTeam);
+  // console.log(idMemberTeam);
 
   connection.query(
     `SELECT 

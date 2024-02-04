@@ -75,7 +75,7 @@ export const sendRecoveryCode = (req, res) => {
       const reset_code = generateRecoveryCode(); // Genera un nuevo código
       const id_usuario = results[0].id_usuario;
 
-      console.log(id_usuario)
+      // console.log(id_usuario)
       
       connection.query("UPDATE usuario SET token = ? WHERE id_usuario = ?", [reset_code, id_usuario],
       (codeError) => {
