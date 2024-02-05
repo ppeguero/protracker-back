@@ -81,6 +81,7 @@ export const getTasksInfoFull = (req, res) => {
     tarea.nombre AS nombre_tarea,
     tarea.descripcion,
     tarea.fecha_limite,
+    tarea.id_proyecto_id,
     proyecto.nombre AS nombre_proyecto,
     tarea.id_estado_id,
     estado.nombre AS nombre_estado,
@@ -119,6 +120,47 @@ export const updateTaskStatus = (req, res) => {
     });
 };
 
+export const updateTask = (req, res) => {
+    const idTask = sanitizer.sanitize.prepareSanitize(req.params.idTask, {
+      xss: true,
+      noSql: true,
+      sql: true,
+      level: 5,
+    });
+  
+    const { nombre, descripcion, fecha_limite, id_proyecto_id, id_estado_id, id_miembro_id } = sanitizer.sanitize.prepareSanitize(
+      req.body,
+      {
+        xss: true,
+        noSql: true,
+        sql: true,
+        level: 5,
+      }
+    );
+  
+    // Validar los datos recibidos
+    if (!nombre || !descripcion || !fecha_limite || !id_proyecto_id || !id_estado_id || !id_miembro_id) {
+      return res.status(400).json({ error: 'Faltan datos obligatorios para actualizar la tarea.' });
+    }
+  
+    const query = `
+      UPDATE tarea
+      SET nombre = ?, descripcion = ?, fecha_limite = ?, id_proyecto_id = ?, id_estado_id = ?, id_miembro_id = ?
+      WHERE id_tarea = ?`;
+  
+    db.query(query, [nombre, descripcion, fecha_limite, id_proyecto_id, id_estado_id, id_miembro_id, idTask], (err, result) => {
+      if (err) {
+        console.error('Error al actualizar tarea:', err);
+        res.status(500).send('Error interno del servidor');
+      } else {
+        console.log('Tarea actualizada con éxito');
+        res.status(200).json({ message: 'Tarea actualizada con éxito' });
+      }
+    });
+  };
+
+
+
 //* Create a task
 export const createTask = (req, res) => {
     const { nombre, descripcion, fecha_limite, id_proyecto_id, id_estado_id, id_miembro_id } = sanitizer.sanitize.prepareSanitize(req.body, {
@@ -151,3 +193,18 @@ export const createTask = (req, res) => {
 //     updateTaskStatus,
 //     createTask,
 // };
+
+export const deleteTask = (req, res) => {
+    const taskId = req.params.idTasks;
+
+    db.query("DELETE FROM tarea WHERE id_tarea = ?", [taskId], (err, results) => {
+        if (err){
+            console.error(err)
+            return res.status(500).json({message: "Error interno del servidor"})
+        }
+        if (results.affectedRows === 0){
+            return res.status(404).json({message: "No se encontraron los datos para eliminar"})
+        }
+        return res.status(200).json({message: "Los datos se han eliminado correctamente"})
+    })
+}

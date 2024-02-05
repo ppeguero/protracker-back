@@ -11,6 +11,7 @@ export const getMembers = (req, res) => {
     miembro.id_equipo_id, 
     miembro.id_especialidad_id,
     usuario.id_usuario,  -- Agrega el ID de usuario
+    usuario.id_rol_id,  -- Agrega el ID de usuario
     usuario.nombre AS nombre_usuario, 
     equipo.id_equipo,  -- Agrega el ID de equipo
     equipo.nombre AS nombre_equipo, 
