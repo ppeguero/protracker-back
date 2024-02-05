@@ -1,6 +1,6 @@
 import express from 'express';
 const router = express.Router();
-import { getMembers, getMember, getMemberWithIdTeam, getMemberWithId, createMember, deleteMember, updateMember } from '../controllers/members.controllers.js';
+import { getMembers, getMember, getMemberWithIdProjectAndUser, getMemberWithIdTeam, getMemberWithId, createMember, deleteMember, updateMember } from '../controllers/members.controllers.js';
 
 // Obtener todos los miembros
 router.get('/members', getMembers);
@@ -13,6 +13,10 @@ router.get('/members-team/:memberTeamId', getMemberWithIdTeam);
 
 // Obtener un miembro por ID
 router.get('/teams-member/:idMember', getMemberWithId);
+
+// Obtener un miembro por ID del proyecto y usuario
+router.get('/members-project-user/:projectId/:userId', getMemberWithIdProjectAndUser);
+
 
 // Crear un miembro
 router.post('/members', createMember);

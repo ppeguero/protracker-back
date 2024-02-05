@@ -26,6 +26,41 @@ export const getTasksUser = (req, res) => {
     });
 }
 
+export const getTasksWithId = (req, res) => {
+    const idTask = sanitizer.sanitize.prepareSanitize(req.params.idTask, {
+      xss: true,
+      noSql: true,
+      sql: true,
+      level: 5,
+    });
+  
+    const sql = `
+      SELECT tarea.id_tarea, tarea.nombre, tarea.descripcion, tarea.fecha_limite,
+             tarea.id_proyecto_id, tarea.id_estado_id, tarea.id_miembro_id,
+             proyecto.nombre AS nombre_proyecto, estado.nombre AS nombre_estado,
+             miembro.id_usuario_id, miembro.id_equipo_id, miembro.id_especialidad_id,
+             usuario.nombre AS nombre_usuario
+      FROM tarea
+      INNER JOIN proyecto ON tarea.id_proyecto_id = proyecto.id_proyecto
+      INNER JOIN estado ON tarea.id_estado_id = estado.id_estado
+      INNER JOIN miembro ON tarea.id_miembro_id = miembro.id_miembro
+      INNER JOIN usuario ON miembro.id_usuario_id = usuario.id_usuario
+      WHERE tarea.id_tarea = ?`;
+  
+    db.query(sql, [idTask], (err, result) => {
+      if (err) {
+        console.error(err);
+        res.status(500).send(err);
+      } else {
+        res.status(200).json(result);
+      }
+    });
+  };
+  
+  
+  
+  
+
 //* Update the status of a task to completed
 export const getTasks = (req, res) => {
     db.query("SELECT * FROM tarea", (err, result) => {
