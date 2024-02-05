@@ -14,5 +14,7 @@ userRoutes.get('/userCount', userController.contadorUsuario);
 userRoutes.post('/login', userController.loginUser);
 userRoutes.get('/users/proyect/:idUser', userController.userProjects);
 userRoutes.get('/users/task/:idUser', userController.userTask);
+userRoutes.get('/users/teams/:idUser', userController.userTeams);
+userRoutes.get('/users/teams-task/:idUser', userController.userTeamTask);
 
 export default userRoutes;

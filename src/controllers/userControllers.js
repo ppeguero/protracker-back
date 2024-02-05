@@ -510,12 +510,70 @@ export const userTask = (req, res) => {
   p.nombre AS nombre_proyecto,
   e.nombre AS nombre_equipo,
   m.id_especialidad_id
-FROM tarea t
-INNER JOIN proyecto p ON t.id_proyecto_id = p.id_proyecto
-INNER JOIN equipo e ON p.id_equipo_id = e.id_equipo
-INNER JOIN miembro m ON t.id_miembro_id = m.id_miembro
-WHERE m.id_usuario_id = ?
-ORDER BY t.fecha_limite ASC;`
+  FROM tarea t
+  INNER JOIN proyecto p ON t.id_proyecto_id = p.id_proyecto
+  INNER JOIN equipo e ON p.id_equipo_id = e.id_equipo
+  INNER JOIN miembro m ON t.id_miembro_id = m.id_miembro
+  WHERE m.id_usuario_id = ?
+  ORDER BY t.fecha_limite ASC;`
+  connection.query(query, [IdUser], (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'Error interno del servidor' });
+    }
+    if (results.length === 0) {
+      return res.status(401).json({ error: 'No se ha encontrado el usuario' });
+    }
+    res.json(results);
+  })
+}
+
+//* Obtener la info del los equipos del usuario
+export const userTeams = (req, res) => {
+  const IdUser = sanitizer.sanitize.prepareSanitize(req.params.idUser, {
+    xss: true,
+    noSql: true,
+    sql: true,
+    level: 5,
+  });
+  const query = `SELECT 
+  e.*,
+  u.nombre AS nombre_usuario
+  FROM equipo e
+  INNER JOIN usuario u ON e.id_usuario_id = u.id_usuario
+  INNER JOIN miembro m ON e.id_equipo = m.id_equipo_id 
+  WHERE m.id_usuario_id = ?;`
+  connection.query(query, [IdUser], (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'Error interno del servidor' });
+    }
+    if (results.length === 0) {
+      return res.status(401).json({ error: 'No se ha encontrado el usuario' });
+    }
+    res.json(results);
+  })
+}
+
+//* Obtener la info del las tareas y de que equipo son segun el usuario
+export const userTeamTask = (req, res) => {
+  const IdUser = sanitizer.sanitize.prepareSanitize(req.params.idUser, {
+    xss: true,
+    noSql: true,
+    sql: true,
+    level: 5,
+  });
+  const query = `SELECT 
+  t.*,
+  p.nombre AS nombre_proyecto,
+  e.nombre AS nombre_equipo,
+  m.id_especialidad_id
+  FROM tarea t
+  INNER JOIN proyecto p ON t.id_proyecto_id = p.id_proyecto
+  INNER JOIN equipo e ON p.id_equipo_id = e.id_equipo
+  INNER JOIN miembro m ON t.id_miembro_id = m.id_miembro
+  WHERE m.id_usuario_id = ?
+  ORDER BY t.fecha_limite ASC;`
   connection.query(query, [IdUser], (err, results) => {
     if (err) {
       console.error(err);
