@@ -157,8 +157,6 @@ export const getMemberWithIdProjectAndUser = (req, res) => {
 };
 
 
-
-
 export const getMemberWithIdTeam = (req, res) => {
   const idMemberTeam = sanitizer.sanitize.prepareSanitize(req.params.memberTeamId, {
     xss: true,

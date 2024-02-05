@@ -104,14 +104,15 @@ export const deleteResource = (req, res) => {
 // SOLICITUDES DE RECURSO
 
 export const getResourceRequests = (req, res) => {
-    connection.query("SELECT * FROM solicitud_recurso", (err, results) => {
+    connection.query("SELECT sr.*, r.nombre AS nombre_recurso FROM solicitud_recurso sr LEFT JOIN recurso r ON sr.id_recurso_id = r.id_recurso", (err, results) => {
         if (err){
             console.error(err)
-            return res.status(500).json({message: "Error interno del servidor:("})
+            return res.status(500).json({ message: "Error interno del servidor:(" })
         }
         res.status(200).json(results)
     })
 }
+
 
 export const getResourceRequest = (req, res) => {
     const id_request = req.params.id;
@@ -134,11 +135,11 @@ export const getResourceRequestByUser = (req, res) => {
 }
 
 export const createResourceRequest = (req, res)=> {
-    const {cantidad, razon_de_solicitud, id_recurso_id, id_proyecto_id, id_miembro_id, fecha_retorno} = req.body;
-    const aprobado = false;
+    const {cantidad, razon_de_solicitud, id_recurso_id, id_proyecto_id, id_miembro_id, fecha_de_inicio, fecha_retorno} = req.body;
+    const aprobado = null;
 
-    connection.query("INSERT INTO solicitud_recurso (cantidad, razon_de_solicitud, aprobado, id_recurso_id, id_proyecto_id, id_miembro_id, fecha_retorno) VALUES (?,?,?,?,?,?,?)",
-    [cantidad, razon_de_solicitud, aprobado, id_recurso_id, id_proyecto_id, id_miembro_id, fecha_retorno], (err, results)=>{
+    connection.query("INSERT INTO solicitud_recurso (cantidad, razon_de_solicitud, aprobado, id_recurso_id, id_proyecto_id, id_miembro_id, fecha_de_inicio, fecha_retorno) VALUES (?,?,?,?,?,?,?,?)",
+    [cantidad, razon_de_solicitud, aprobado, id_recurso_id, id_proyecto_id, id_miembro_id, fecha_de_inicio, fecha_retorno], (err, results)=>{
         if (err){
             console.error(err)
             return res.status(500).json({message: "Error del servidor"})

@@ -163,29 +163,24 @@ export const updateTask = (req, res) => {
 
 //* Create a task
 export const createTask = (req, res) => {
-    const { nombre, descripcion, fecha_limite, id_proyecto_id, id_estado_id, id_miembro_id } = sanitizer.sanitize.prepareSanitize(req.body, {
-        xss: true,
-        noSql: true,
-        sql: true,
-        level: 5,
-      });
+  const { nombre, descripcion, fecha_limite, id_proyecto_id, id_estado_id, id_miembro_id } = req.body;
 
-     // Validar los datos recibidos
-     if (!nombre || !descripcion || !fecha_limite || !id_proyecto_id || !id_estado_id || !id_miembro_id) {
-        return res.status(400).json({ error: 'Faltan datos obligatorios para crear el equipo.' });
+  // Validar los datos recibidos
+  if (!nombre || !descripcion || !fecha_limite || !id_proyecto_id || !id_estado_id || !id_miembro_id) {
+    return res.status(400).json({ error: 'Faltan datos obligatorios para crear la tarea.' });
+  }
+  
+  const query = "INSERT INTO tarea (nombre, descripcion, fecha_limite, id_proyecto_id, id_estado_id, id_miembro_id) VALUES (?, ?, ?, ?, 3, ?)";
+  
+  db.query(query, [nombre, descripcion, fecha_limite, id_proyecto_id, id_miembro_id], (err, result) => {
+    if (err) {
+      console.error("Error al insertar tarea:", err);
+      res.status(500).send("Error interno del servidor");
+    } else {
+      console.log("Tarea insertada con éxito");
+      res.status(200).json("Tarea insertada con éxito");
     }
-
-    const query = "INSERT INTO tarea (nombre, descripcion, fecha_limite, id_proyecto_id, id_estado_id, id_miembro_id) VALUES (?, ?, ?, ?, 3, ?)";
-
-    db.query(query, [nombre, descripcion, fecha_limite, id_proyecto_id, id_estado_id, id_miembro_id], (err, result) => {
-        if (err) {
-            console.error("Error al insertar tarea:", err);
-            res.status(500).send("Error interno del servidor");
-        } else {
-            console.log("Tarea insertada con éxito");
-            res.status(200).json("Tarea insertada con éxito");
-        }
-    });
+  });
 };
 
 // export default { 
