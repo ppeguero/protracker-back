@@ -1,12 +1,15 @@
 import express from 'express';
 const router = express.Router();
-import { getProjects, getProject, createProject, deleteProject, updateProject } from '../controllers/projects.controllers.js';
+import { getProjects, getProject, getProjectWithIdTeam, createProject, deleteProject, updateProject } from '../controllers/projects.controllers.js';
 
 // Obtener todos los proyectos
 router.get('/projects', getProjects);
 
 // Obtener un proyecto por ID
 router.get('/projects/:idProject', getProject);
+
+// Obtener un proyecto por ID
+router.get('/projects-team/:idTeam', getProjectWithIdTeam);
 
 // Crear un proyecto
 router.post('/projects', createProject);

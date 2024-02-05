@@ -58,6 +58,40 @@ export const getProjects = (req, res) => {
     });
   };
 
+  // Obtener un proyecto por ID con información relacionada
+  export const getProjectWithIdTeam = (req, res) => {
+    const teamId = sanitizer.sanitize.prepareSanitize(req.params.idTeam, {
+      xss: true,
+      noSql: true,
+      sql: true,
+      level: 5,
+    });
+    const query = `
+      SELECT 
+        p.*,
+        u.nombre AS nombre_usuario,
+        e.nombre AS nombre_equipo,
+        es.nombre AS nombre_estado
+      FROM proyecto p
+      INNER JOIN usuario u ON p.id_usuario_id = u.id_usuario
+      INNER JOIN equipo e ON p.id_equipo_id = e.id_equipo
+      INNER JOIN estado es ON p.id_estado_id = es.id_estado
+      WHERE p.id_equipo_id = ?
+    `;
+  
+    connection.query(query, [teamId], (error, results) => {
+      if (error) {
+        res.status(500).json({ error: 'Error al obtener el proyecto.' });
+      } else {
+        if (results.length > 0) {
+          res.status(200).json(results);
+        } else {
+          res.status(404).json({ message: 'Proyecto no encontrado.' });
+        }
+      }
+    });
+  };
+
 // Crear un proyecto
 export const createProject = (req, res) => {
   const { nombre, descripcion, fecha_inicio, id_usuario_id, id_estado_id, id_equipo_id } = sanitizer.sanitize.prepareSanitize(req.body, {

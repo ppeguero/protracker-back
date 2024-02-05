@@ -12,7 +12,7 @@ router.get('/members/:idMember', getMember);
 router.get('/members-team/:memberTeamId', getMemberWithIdTeam);
 
 // Obtener un miembro por ID
-router.get('/member-team/:idMember', getMemberWithId);
+router.get('/teams-member/:idMember', getMemberWithId);
 
 // Crear un miembro
 router.post('/members', createMember);
