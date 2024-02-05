@@ -21,6 +21,8 @@ const PORT = process.env.PORT || 8080;
 
 app.use(helmet());
 
+// rutas
+import resourceRoutes from './src/routes/resourceRoutes.js'
 
 // Configuración de HTTPS
 const options = {
@@ -30,6 +32,19 @@ const options = {
 
 // Middleware
 app.use(express.json());
+// permitir la comunicación del frontend(en el port 3000) con el backend
+app.use(cors({
+	origin: 'https://localhost:5173',
+	methods: ['GET, POST, PUT, DELETE, PATCH', 'OPTIONS'],
+	allowedHeaders: ['Content-Type', 'Authorization']
+}))
+
+app.options('*', cors()); 
+
+// usar rutas
+
+app.use(express.json())
+
 
 app.use(
   sanitizer.clean({
@@ -63,6 +78,7 @@ app.use('/api', projectRoutes);
 app.use('/api', memberRoutes);
 app.use('/api', rolesRoutes);
 app.use('/api', statusRoutes);
+app.use('/api', resourceRoutes);
 
 // Inicializar servidor HTTPS
 https.createServer(options, app).listen(PORT, () => {
