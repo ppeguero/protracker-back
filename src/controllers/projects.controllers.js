@@ -113,6 +113,8 @@ export const updateProject = (req, res) => {
       sql: true,
       level: 5,
     });
+
+    console.log(nombre, descripcion, fecha_inicio, id_usuario_id, id_estado_id, id_equipo_id);
   
     // Validar existencia del proyecto
     const checkProjectQuery = 'SELECT * FROM proyecto WHERE id_proyecto = ?';
