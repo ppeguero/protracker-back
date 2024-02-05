@@ -469,3 +469,61 @@ export const loginUser = (req, res) => {
   );
 };
 
+//* Obtener la info del los proyectos del usuario
+export const userProjects = (req, res) => {
+  const IdUser = sanitizer.sanitize.prepareSanitize(req.params.idUser, {
+    xss: true,
+    noSql: true,
+    sql: true,
+    level: 5,
+  });
+  const query = `SELECT 
+  p.*,
+  e.nombre AS nombre_equipo,
+  m.id_especialidad_id
+  FROM proyecto p
+  INNER JOIN equipo e ON p.id_equipo_id = e.id_equipo
+  INNER JOIN miembro m ON p.id_equipo_id = m.id_equipo_id
+  WHERE m.id_usuario_id = ? ORDER BY p.fecha_inicio ASC;`
+  connection.query(query, [IdUser], (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'Error interno del servidor' });
+    }
+    if (results.length === 0) {
+      return res.status(401).json({ error: 'No se ha encontrado el usuario' });
+    }
+    res.json(results);
+  })
+}
+
+//* Obtener la info del las tareas del usuario
+export const userTask = (req, res) => {
+  const IdUser = sanitizer.sanitize.prepareSanitize(req.params.idUser, {
+    xss: true,
+    noSql: true,
+    sql: true,
+    level: 5,
+  });
+  const query = `SELECT 
+  t.*,
+  p.nombre AS nombre_proyecto,
+  e.nombre AS nombre_equipo,
+  m.id_especialidad_id
+FROM tarea t
+INNER JOIN proyecto p ON t.id_proyecto_id = p.id_proyecto
+INNER JOIN equipo e ON p.id_equipo_id = e.id_equipo
+INNER JOIN miembro m ON t.id_miembro_id = m.id_miembro
+WHERE m.id_usuario_id = ?
+ORDER BY t.fecha_limite ASC;`
+  connection.query(query, [IdUser], (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'Error interno del servidor' });
+    }
+    if (results.length === 0) {
+      return res.status(401).json({ error: 'No se ha encontrado el usuario' });
+    }
+    res.json(results);
+  })
+}

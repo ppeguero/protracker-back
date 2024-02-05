@@ -12,5 +12,7 @@ userRoutes.post('/user/verify', userController.validateRecoveryCode);
 userRoutes.patch('/user/restablish', userController.resetPassword);
 userRoutes.get('/userCount', userController.contadorUsuario);
 userRoutes.post('/login', userController.loginUser);
+userRoutes.get('/users/proyect/:idUser', userController.userProjects);
+userRoutes.get('/users/task/:idUser', userController.userTask);
 
 export default userRoutes;

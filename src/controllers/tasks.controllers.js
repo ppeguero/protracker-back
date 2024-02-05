@@ -5,7 +5,7 @@ import sanitizer from 'perfect-express-sanitizer';
 //* Get the tasks with all their information from a specific user
 export const getTasksUser = (req, res) => {
 
-    idUser = sanitizer.sanitize.prepareSanitize(req.params.idUser, {
+    const idUser = sanitizer.sanitize.prepareSanitize(req.params.idUser, {
         xss: true,
         noSql: true,
         sql: true,
@@ -40,7 +40,7 @@ export const getTasks = (req, res) => {
 
 //* Update the status of a task to completed
 export const updateTaskStatus = (req, res) => {
-    idTasks = sanitizer.sanitize.prepareSanitize(req.params.idTasks, {
+    const idTasks = sanitizer.sanitize.prepareSanitize(req.params.idTasks, {
         xss: true,
         noSql: true,
         sql: true,
