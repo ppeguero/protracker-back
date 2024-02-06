@@ -207,19 +207,38 @@ export const createMember = (req, res) => {
     level: 5,
   });
 
+  // Verificar si el miembro ya existe con el id_usuario_id proporcionado
   connection.query(
-    "INSERT INTO miembro (id_usuario_id, id_equipo_id, id_especialidad_id) VALUES (?, ?, ?)",
-    [id_usuario_id, id_equipo_id, id_especialidad_id],
+    "SELECT * FROM miembro WHERE id_usuario_id = ?",
+    [id_usuario_id],
     (error, results) => {
       if (error) {
-        console.error("Error al crear el miembro:", error);
-        res.status(500).json({ error: "Error interno del servidor" });
-      } else {
-        res.status(201).json({ id_miembro: results.insertId });
+        console.error("Error al verificar el miembro:", error);
+        return res.status(500).json({ error: "Error interno del servidor" });
       }
+
+      if (results.length > 0) {
+        // El miembro ya existe con el id_usuario_id proporcionado
+        return res.status(400).json({ error: "El miembro ya existe con el id_usuario_id proporcionado" });
+      }
+
+      // El miembro no existe, proceder con la inserción
+      connection.query(
+        "INSERT INTO miembro (id_usuario_id, id_equipo_id, id_especialidad_id) VALUES (?, ?, ?)",
+        [id_usuario_id, id_equipo_id, id_especialidad_id],
+        (insertError, insertResults) => {
+          if (insertError) {
+            console.error("Error al crear el miembro:", insertError);
+            return res.status(500).json({ error: "Error interno del servidor" });
+          }
+
+          res.status(201).json({ id_miembro: insertResults.insertId });
+        }
+      );
     }
   );
 };
+
 
 // Eliminar un miembro por ID
 export const deleteMember = (req, res) => {
