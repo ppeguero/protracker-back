@@ -10,6 +10,7 @@ resourceRoutes.post('/resource/request', resourceController.createResourceReques
 resourceRoutes.delete('/resource/request/:id', resourceController.deleteResourceRequest)
 resourceRoutes.patch('/resource/request/:id', resourceController.updateResourceRequest)
 resourceRoutes.post('/resource/accept-request/:id', resourceController.acceptResourceRequest)
+resourceRoutes.post('/resource/decline-request/:id', resourceController.declineResourceRequest)
 
 resourceRoutes.get('/resource', resourceController.getResources)
 resourceRoutes.get('/resource-by-project', resourceController.getResourceByProjectId);

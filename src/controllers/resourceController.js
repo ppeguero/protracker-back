@@ -116,17 +116,25 @@ export const getResourceRequests = (req, res) => {
 
 export const getResourceRequest = (req, res) => {
     const id_request = req.params.id;
-    connection.query("SELECT * FROM solicitud_recurso WHERE id_solicitud_recurso = ?", [id_request], (err, results) => {
-        if (err){
-            console.error(err)
-            return res.status(500).json({message: "Error interno del servidor"})
+    connection.query(
+        "SELECT solicitud_recurso.*, recurso.nombre AS nombre_recurso " +
+        "FROM solicitud_recurso " +
+        "INNER JOIN recurso ON solicitud_recurso.id_recurso_id = recurso.id_recurso " +
+        "WHERE solicitud_recurso.id_solicitud_recurso = ?",
+        [id_request],
+        (err, results) => {
+            if (err){
+                console.error(err);
+                return res.status(500).json({message: "Error interno del servidor"});
+            }
+            if (results.length === 0){
+                return res.status(404).json({message: "No se encontró la solicitud!"});
+            }
+            res.status(200).json(results[0]);
         }
-        if (results.length === 0){
-            return res.status(404).json({message: "No se encontró la solicitud!"})
-        }
-        res.status(200).json(results[0])
-    })
-}
+    );
+};
+
 
 export const getResourceRequestByUser = (req, res) => {
     const id_user = req.query;
@@ -227,10 +235,10 @@ export const acceptResourceRequest = (req, res) => {
 
             const quantityLeft = quantityAvailable - quantityRequested;
 
-            connection.query("DELETE FROM solicitud_recurso WHERE id_solicitud_recurso = ?", [id_request], (err, results) => {
+            connection.query("UPDATE solicitud_recurso SET aprobado = true WHERE id_solicitud_recurso = ?", [id_request], (err, results) => {
                 if (err) {
                     console.error(err);
-                    return res.status(500).json({ message: "Error del servidor al eliminar la solicitud de recurso" });
+                    return res.status(500).json({ message: "Error del servidor al actualizar el estado de la solicitud de recurso" });
                 }
 
                 connection.query("UPDATE recurso SET cantidad = ? WHERE id_recurso = ?", [quantityLeft, request.id_recurso_id], (err, results) => {
@@ -251,6 +259,34 @@ export const acceptResourceRequest = (req, res) => {
                     res.status(200).json({ message: "Solicitud aceptada y recurso actualizado exitosamente" });
                 });
             });
+        });
+    });
+};
+
+
+// cuando se decline la solicitud de un recurso, se va a actualizar el campo 'aprobado' a false
+export const declineResourceRequest = (req, res) => {
+    const id_request = req.params.id;
+
+    connection.query("SELECT * FROM solicitud_recurso WHERE id_solicitud_recurso = ?", [id_request], (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ message: "Error del servidor" });
+        }
+
+        if (results.length === 0) {
+            return res.status(404).json({ message: "Solicitud de recurso no encontrada." });
+        }
+
+        const request = results[0];
+
+        connection.query("UPDATE solicitud_recurso SET aprobado = false WHERE id_solicitud_recurso = ?", [id_request], (err, results) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).json({ message: "Error del servidor al declinar la solicitud de recurso" });
+            }
+
+            res.status(200).json({ message: "Solicitud declinada exitosamente" });
         });
     });
 };
